@@ -5,7 +5,6 @@ function AdminPanel() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [isConnected, setIsConnected] = useState(false);
-  const [isUserConnected, setIsUserConnected] = useState(false);
   const ws = useRef(null);
 
   useEffect(() => {
@@ -19,7 +18,9 @@ function AdminPanel() {
   }, []);
 
   const connectWebSocket = () => {
-    ws.current = new WebSocket('ws://https://watchdog-llm.onrender.com');
+    const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+    const wsUrl = `${protocol}://watchdog-llm.onrender.com`;
+    ws.current = new WebSocket(wsUrl);
 
     ws.current.onopen = () => {
       console.log('WebSocket Connected');
@@ -46,18 +47,10 @@ function AdminPanel() {
     if (flexId.trim() === '' || !isConnected) return;
 
     ws.current.send(`admin:${flexId}`);
-    setIsUserConnected(true);
-  };
-
-  const disconnectFromUser = () => {
-    if (!isConnected || !isUserConnected) return;
-
-    ws.current.send(`disconnect:${flexId}`);
-    setIsUserConnected(false);
   };
 
   const sendMessage = () => {
-    if (input.trim() === '' || !isConnected || !isUserConnected) return;
+    if (input.trim() === '' || !isConnected) return;
 
     console.log('Sending message:', input);
     setMessages((prevMessages) => [...prevMessages, { role: 'admin', content: input }]);
@@ -74,8 +67,7 @@ function AdminPanel() {
           onChange={(e) => setFlexId(e.target.value)}
           placeholder="Enter FLEX360_ID"
         />
-        <button onClick={connectToUser} disabled={!isConnected || isUserConnected}>Connect</button>
-        <button onClick={disconnectFromUser} disabled={!isConnected || !isUserConnected}>Disconnect</button>
+        <button onClick={connectToUser} disabled={!isConnected}>Connect</button>
       </div>
       <div className="messages">
         {messages.map((msg, index) => (
@@ -90,10 +82,10 @@ function AdminPanel() {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
-          placeholder={isConnected && isUserConnected ? "Type your message..." : "Connecting..."}
-          disabled={!isConnected || !isUserConnected}
+          placeholder={isConnected ? "Type your message..." : "Connecting..."}
+          disabled={!isConnected}
         />
-        <button onClick={sendMessage} disabled={!isConnected || !isUserConnected}>Send</button>
+        <button onClick={sendMessage} disabled={!isConnected}>Send</button>
       </div>
     </div>
   );

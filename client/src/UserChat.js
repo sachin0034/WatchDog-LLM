@@ -17,7 +17,9 @@ function UserChat() {
   }, []);
 
   const connectWebSocket = () => {
-    ws.current = new WebSocket('ws://https://watchdog-llm.onrender.com');
+    const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+    const wsUrl = `${protocol}://watchdog-llm.onrender.com`;
+    ws.current = new WebSocket(wsUrl);
 
     ws.current.onopen = () => {
       console.log('WebSocket Connected');
