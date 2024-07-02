@@ -19,7 +19,7 @@ function AdminPanel() {
   }, []);
 
   const connectWebSocket = () => {
-    ws.current = new WebSocket('ws://localhost:5000');
+    ws.current = new WebSocket('ws://https://watchdog-llm.onrender.com');
 
     ws.current.onopen = () => {
       console.log('WebSocket Connected');
