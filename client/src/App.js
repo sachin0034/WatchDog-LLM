@@ -1,16 +1,20 @@
 import React from 'react';
-import UserChat from './UserChat';
-import AdminPanel from './AdminPanel';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import UserPage from './userPage';
+import AdminPage from './adminPage';
 import './App.css';
 
 function App() {
   return (
-    <div className="App">
-      <h1>User Chat</h1>
-      <UserChat />
-      <h1>Admin Panel</h1>
-      <AdminPanel />
-    </div>
+    <Router>
+      <div className="App">
+        <Routes>
+          <Route path="/user" element={<UserPage />} />
+          <Route path="/admin" element={<AdminPage />} />
+          <Route path="*" element={<Navigate to="/user" replace />} />
+        </Routes>
+      </div>
+    </Router>
   );
 }
 
