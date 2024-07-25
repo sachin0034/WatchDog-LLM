@@ -19,8 +19,8 @@ function AdminPanel() {
 
   const connectWebSocket = () => {
     const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
-    // const wsUrl = `${protocol}://watchdog-llm.onrender.com`;
-    const wsUrl = "http://localhost:5000";
+    const wsUrl = `${protocol}://watchdog-llm.onrender.com`;
+    // const wsUrl = "http://localhost:5000";
     ws.current = new WebSocket(wsUrl);
 
     ws.current.onopen = () => {
