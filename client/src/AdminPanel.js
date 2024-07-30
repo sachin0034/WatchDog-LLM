@@ -19,8 +19,8 @@ function AdminPanel() {
 
   const connectWebSocket = () => {
     const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
-    // const wsUrl = `${protocol}://watch-dog-llm-nn5u.vercel.app`;
-    const wsUrl = "https://watch-dog-llm.vercel.app";
+    const wsUrl = `${protocol}://watch-dog-llm.vercel.app`;
+    // const wsUrl = "https://watch-dog-llm.vercel.app";
     // const wsUrl = "http://localhost:5000";
     ws.current = new WebSocket(wsUrl);
 
