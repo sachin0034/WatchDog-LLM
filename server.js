@@ -139,46 +139,61 @@ wss.on('connection', (ws, req) => {
           }
         }
       } else {
-        let context;
-        if (isRegistered) {
-          const userData = userDataStore.get(flex360Id);
-          if (!userData) {
-            ws.send("I'm sorry, I couldn't retrieve your data. Please reconnect and provide your FLEX360_ID again.");
-            return;
-          }
-          context = `User data: ${JSON.stringify(userData)}
-User query: ${userMessage}
-Please provide a response based on the user's data and query. If the query is about information contained in the user data, use that information in your response. Always refer to the user data when answering questions about the user's details.`;
-        } else {
-          context = `Unregistered user query: ${userMessage}
-Please provide a general response to the user's query without referencing any specific user data.`;
-        }
-
-        console.log('Sending context to OpenAI:', context);
-
-        // Requesting AI response based on user query and context
-        const response = await openai.chat.completions.create({
-          model: "gpt-3.5-turbo",
-          messages: [
-            { role: "system", content: "You are a helpful assistant. If user data is available, provide accurate information based on it. For unregistered users, provide general helpful responses." },
-            { role: "user", content: context }
-          ],
-        });
-
-        const botMessage = response.choices[0].message.content;
-        console.log('Received response from OpenAI:', botMessage);
-        ws.send(botMessage);
-
-        if (isRegistered) {
-          saveMessage(flex360Id, 'user', userMessage);
-          saveMessage(flex360Id, 'bot', botMessage);
-        }
-
-        if (isRegistered && adminConnections.has(flex360Id)) {
+        if (adminConnections.has(flex360Id)) {
+          // If admin is connected, just forward the message to admin
           const adminWs = adminConnections.get(flex360Id);
           if (adminWs) {
             adminWs.send(`User: ${userMessage}`);
-            adminWs.send(`Bot: ${botMessage}`);
+          }
+          saveMessage(flex360Id, 'user', userMessage);
+        } else {
+          // If admin is not connected, proceed with bot response
+          if (isRegistered) {
+            const userData = userDataStore.get(flex360Id);
+            if (userData) {
+              let context = `User data: ${JSON.stringify(userData)}
+User query: ${userMessage}
+Please provide a response based on the user's data and query. If the query is about information contained in the user data, use that information in your response. Always refer to the user data when answering questions about the user's details.`;
+
+              console.log('Sending context to OpenAI:', context);
+
+              // Requesting AI response based on user query and context
+              const response = await openai.chat.completions.create({
+                model: "gpt-3.5-turbo",
+                messages: [
+                  { role: "system", content: "You are a helpful assistant. If user data is available, provide accurate information based on it. For unregistered users, provide general helpful responses." },
+                  { role: "user", content: context }
+                ],
+              });
+
+              const botMessage = response.choices[0].message.content;
+              console.log('Received response from OpenAI:', botMessage);
+              ws.send(botMessage);
+
+              saveMessage(flex360Id, 'user', userMessage);
+              saveMessage(flex360Id, 'bot', botMessage);
+            } else {
+              ws.send("I'm sorry, I couldn't retrieve your data. Please reconnect and provide your FLEX360_ID again.");
+            }
+          } else {
+            // Handle unregistered user
+            let context = `Unregistered user query: ${userMessage}
+Please provide a general response to the user's query without referencing any specific user data.`;
+
+            console.log('Sending context to OpenAI:', context);
+
+            // Requesting AI response based on user query and context
+            const response = await openai.chat.completions.create({
+              model: "gpt-3.5-turbo",
+              messages: [
+                { role: "system", content: "You are a helpful assistant. Provide general helpful responses for unregistered users." },
+                { role: "user", content: context }
+              ],
+            });
+
+            const botMessage = response.choices[0].message.content;
+            console.log('Received response from OpenAI:', botMessage);
+            ws.send(botMessage);
           }
         }
       }
