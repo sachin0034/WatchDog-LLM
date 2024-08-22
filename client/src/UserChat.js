@@ -20,7 +20,8 @@ function UserChat() {
     const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
     // const wsUrl = `${protocol}://watch-dog-llm.vercel.app`;
     // const wsUrl = "https://watch-dog-llm.vercel.app";
-    const wsUrl = "http://54.252.184.92:5000";
+    // const wsUrl = "http://54.252.184.92:5000";
+    const wsUrl = "http://localhost:5000"
     ws.current = new WebSocket(wsUrl);
 
     ws.current.onopen = () => {
